@@ -8,6 +8,7 @@ import eleveRoutes from "./routes/eleveRoutes.js";
 import classRoutes from "./routes/classroutes.js";
 import coursRoutes from "./routes/coursRoutes.js";
 import path from "path";
+import demandeRoutes from "./routes/demandeRoutes.js";
 
 
 
@@ -17,6 +18,8 @@ import connectDB from "./config/db.js";
 const app = express(); //instance d'express
 
 const __dirname = path.resolve();
+
+
 
 
 // Connexion à la base de données
@@ -37,6 +40,9 @@ app.use("/api/cours", coursRoutes);
 // ⚡ Permet d'accéder aux fichiers uploadés
 //app.use("/uploads", express.static("uploads"));
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
+
+
+app.use("/api/demandes", demandeRoutes);
 
 //app.use("/api/eleves", eleveRoutes);
 

@@ -1,6 +1,7 @@
 import Eleve from "../models/elevemodel.js";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
+import DemandeAcces from "../models/DemandeAccesmodel.js";
 
 // Générer un token JWT
 const generateToken = (eleveId) => {
@@ -9,9 +10,6 @@ const generateToken = (eleveId) => {
 
 
 // ✅ INSCRIPTION
-
-
-// 🔹 Fonction signupEleve
 export const signupEleve = async (req, res) => {
   try {
     const { nom, prenom, email, password } = req.body;
@@ -66,165 +64,7 @@ export const signupEleve = async (req, res) => {
   }
 };
 
-
-/*export const signupEleve = async (req, res) => {
-  try {
-    const { nom, prenom, email, password} = req.body;
-
-    console.log("📩 Données reçues pour inscription élève :", req.body);
-
-    const existing = await Eleve.findOne({ email });
-    if (existing) {
-      return res.status(400).json({ success: false, message: "Email déjà utilisé" });
-    }
-
-    const hashedPassword = await bcrypt.hash(password, 10);
-
-    const newEleve = new Eleve({
-      nom,
-      prenom,
-      email,
-      password: hashedPassword,
-      //profId, // ✅ on enregistre le prof lié à cet élève
-    });
-
-    await newEleve.save();
-
-    console.log("✅ Élève créé avec profId :", newEleve.profId);
-
-    res.status(201).json({
-      success: true,
-      message: "Élève créé avec succès",
-      eleve: newEleve,
-    });
-  } catch (error) {
-    console.error("Erreur signupEleve:", error);
-    res.status(500).json({ success: false, message: "Erreur serveur" });
-  }
-};*/
-
-/*export const signupEleve = async (req, res) => {
-  try {
-    const { nom, prenom, email, password, profId } = req.body;
-
-    // 🔍 Chercher l'élève par email
-    let eleve = await Eleve.findOne({ email }).populate("profId");;
-
-    if (eleve) {
-      // ✅ L'élève existe déjà → il a été ajouté par un prof
-      // On met à jour son mot de passe et éventuellement son nom/prénom
-      const hashedPassword = await bcrypt.hash(password, 10);
-      eleve.password = hashedPassword;
-      eleve.nom = eleve.nom || nom;
-      eleve.prenom = eleve.prenom || prenom;
-      await eleve.save();
-
-      const token = jwt.sign({ id: eleve._id }, process.env.JWT_SECRET, { expiresIn: "1d" });
-      return res.status(200).json({
-        success: true,
-        message: "Mot de passe créé avec succès. Vous pouvez maintenant vous connecter.",
-        token,
-        eleve
-      });
-    }
-
-    // 🚀 Sinon, c’est un nouvel élève → on le crée
-    const hashedPassword = await bcrypt.hash(password, 10);
-    const newEleve = new Eleve({ nom, prenom, email, password: hashedPassword, profId: req.user._id });
-    await newEleve.save();
-
-    const token = jwt.sign({ id: newEleve._id }, process.env.JWT_SECRET, { expiresIn: "1d" });
-    return res.status(201).json({
-      success: true,
-      message: "Compte créé avec succès",
-      token,
-      eleve: newEleve
-    });
-
-  } catch (err) {
-    console.error("Erreur signupEleve:", err);
-    return res.status(500).json({ success: false, message: "Erreur serveur" });
-  }
-};*/
-
-/*export const signupEleve = async (req, res) => {
-  try {
-    const { nom, prenom, email, password } = req.body;
-    console.log("📩 Requête signup reçue :", req.body);
-
-    // Vérifie si l'élève existe déjà (créé par le prof)
-    let eleve = await Eleve.findOne({ email });
-
-    if (eleve) {
-      console.log("⚠️ Élève déjà existant :", eleve.email);
-      // Si l’élève existe déjà mais sans mot de passe → il complète son profil
-      if (!eleve.password) {
-        const hashedPassword = await bcrypt.hash(password, 10);
-        eleve.nom = eleve.nom || nom;
-        eleve.prenom = eleve.prenom || prenom;
-        eleve.password = hashedPassword;
-        await eleve.save();
-        return res.status(200).json({ success: true, message: "Compte complété avec succès !" });
-      } else {
-        // Sinon, il a déjà un mot de passe → il ne peut pas se réinscrire
-        return res.status(400).json({ success: false, message: "Email déjà utilisé" });
-      }
-    }
-
-    // Cas où l'élève n’a jamais été créé par le prof
-    const hashedPassword = await bcrypt.hash(password, 10);
-    console.log("🆕 Création d'un nouvel élève :", email);
-    const newEleve = new Eleve({ nom, prenom, email, password: hashedPassword });
-    await newEleve.save();
-
-    res.status(201).json({ success: true, message: "Inscription réussie !" });
-  } catch (error) {
-    console.error("Erreur signupEleve:", error);
-    res.status(500).json({ success: false, message: error.message });
-  }
-};*/
-/*export const signup = async (req, res) => {
-  try {
-    const { nom, prenom, email, password } = req.body;
-
-    // Vérifier si l'élève existe déjà
-    const existingEleve = await Eleve.findOne({ email });
-    if (existingEleve) {
-      return res.status(400).json({ success: false, message: "Email déjà utilisé" });
-    }
-
-    // Hasher le mot de passe
-    const salt = await bcrypt.genSalt(10);
-    const hashedPassword = await bcrypt.hash(password, salt);
-
-    // Créer l'élève
-    const newEleve = await Eleve.create({
-      nom,
-      prenom,
-      email,
-      password: hashedPassword,
-    });
-
-    res.status(201).json({
-      success: true,
-      message: "Élève créé avec succès",
-      eleve: {
-        id: newEleve._id,
-        nom: newEleve.nom,
-        prenom: newEleve.prenom,
-        email: newEleve.email,
-      },
-      token: generateToken(newEleve._id),
-    });
-  } catch (error) {
-    console.error("Erreur signup:", error);
-    res.status(500).json({ success: false, message: "Erreur serveur" });
-  }
-};*/
-
 // ✅ CONNEXION
-
-
 export const loginEleve = async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -306,4 +146,52 @@ export const getElevesByProf = async (req, res) => {
     res.status(500).json({ message: "Erreur serveur lors du chargement" });
   }
 };
+
+export const demanderAccesClasse = async (req, res) => {
+  try {
+    console.log("📥 Données reçues:", req.body); 
+    const { eleveId, profId, classeId } = req.body;
+
+    // Vérifie si une demande existe déjà
+    const existe = await DemandeAcces.findOne({ eleveId, classeId });
+    if (existe) {
+      return res.status(400).json({ success: false, message: "Demande déjà envoyée." });
+    }
+
+    const demande = await DemandeAcces.create({
+      eleveId,
+      profId,
+      classeId,
+      statut: "en_attente", // 👈 AJOUT ICI
+    });
+
+    res.status(201).json({ success: true, message: "Demande envoyée au professeur.", demande });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ success: false, message: "Erreur lors de la création de la demande." });
+  }
+};
+
+
+export const verifierAccesEleve = async (req, res) => {
+  try {
+    const { eleveId } = req.params;
+
+    const demande = await DemandeAcces.findOne({ eleveId })
+      .sort({ dateDemande: -1 }) // prend la plus récente
+      .populate("classeId", "niveau serie");
+
+    if (!demande) {
+      return res.status(200).json({ statut: "aucune_demande" });
+    }
+
+    return res.status(200).json({
+      statut: demande.statut,
+      classeId: demande.classeId?._id || null,
+    });
+  } catch (err) {
+    return res.status(500).json({ message: "Erreur serveur" });
+  }
+};
+
 

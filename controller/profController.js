@@ -1,6 +1,7 @@
 import Prof from "../models/profmodel.js";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
+import DemandeAcces from "../models/DemandeAccesmodel.js";
 
 // ⚡ Générer un token JWT pour un utilisateur
 const generateToken = (profId) => {
@@ -88,6 +89,45 @@ export const login = async (req, res) => {
     } catch (error) {
       console.error(error);
       res.status(500).json({ success: false, message: "Server error" });
+    }
+  };
+  
+  export const getDemandesAcces = async (req, res) => {
+    try {
+      const profId = req.prof._id;
+      const demandes = await DemandeAcces.find({ profId, statut: "en_attente" })
+        .populate("eleveId", "nom prenom email")
+        .populate("classeId", "niveau serie");
+  
+      res.status(200).json({ success: true, demandes });
+    } catch (error) {
+      res.status(500).json({ success: false, message: "Erreur serveur" });
+    }
+  };
+
+
+  export const repondreDemandeAcces = async (req, res) => {
+    try {
+      const { demandeId } = req.params;
+      const { decision } = req.body; // "accepte" ou "refuse"
+  
+      const demande = await DemandeAcces.findById(demandeId);
+      if (!demande) {
+        return res.status(404).json({ success: false, message: "Demande introuvable" });
+      }
+  
+      demande.statut = decision;
+      await demande.save();
+  
+      if (decision === "accepte") {
+        // ici tu peux lier l’élève à la classe
+        const Eleve = (await import("../models/elevemodel.js")).default;
+        await Eleve.findByIdAndUpdate(demande.eleveId, { classeId: demande.classeId });
+      }
+  
+      res.status(200).json({ success: true, message: `Demande ${decision}.` });
+    } catch (error) {
+      res.status(500).json({ success: false, message: "Erreur serveur" });
     }
   };
   
