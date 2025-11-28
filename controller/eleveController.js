@@ -149,6 +149,39 @@ export const getElevesByProf = async (req, res) => {
 
 export const demanderAccesClasse = async (req, res) => {
   try {
+    const { eleveId, profId, classeId } = req.body;
+
+    console.log("📥 Données reçues:", { eleveId, profId, classeId });
+
+    // Vérification des champs obligatoires
+    if (!eleveId || !profId || !classeId) {
+      return res.status(400).json({ success: false, message: "Champs manquants." });
+    }
+
+    // Vérifie si une demande existe déjà pour ce couple élève + prof + classe
+    const existe = await DemandeAcces.findOne({ eleveId, profId, classeId });
+    if (existe) {
+      return res.status(400).json({ success: false, message: "Demande déjà envoyée pour cette classe." });
+    }
+
+    // Crée la demande
+    const demande = await DemandeAcces.create({
+      eleveId,
+      profId,
+      classeId,
+      statut: "en_attente",
+      dateDemande: new Date(),
+    });
+
+    res.status(201).json({ success: true, message: "Demande envoyée au professeur.", demande });
+  } catch (error) {
+    console.error("Erreur lors de la création de la demande :", error);
+    res.status(500).json({ success: false, message: "Erreur serveur." });
+  }
+};
+
+/*export const demanderAccesClasse = async (req, res) => {
+  try {
     console.log("📥 Données reçues:", req.body); 
     const { eleveId, profId, classeId } = req.body;
 
@@ -170,7 +203,7 @@ export const demanderAccesClasse = async (req, res) => {
     console.error(error);
     res.status(500).json({ success: false, message: "Erreur lors de la création de la demande." });
   }
-};
+};*/
 
 
 export const verifierAccesEleve = async (req, res) => {
