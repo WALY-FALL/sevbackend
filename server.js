@@ -17,6 +17,29 @@ import connectDB from "./config/db.js";
 
 const app = express(); //instance d'express
 
+const allowedOrigin = "https://sevfrontend.vercel.app";
+
+app.use((req, res, next) => {
+  res.header("Access-Control-Allow-Origin", allowedOrigin);
+  res.header("Access-Control-Allow-Credentials", "true");
+  res.header(
+    "Access-Control-Allow-Headers",
+    "Origin, X-Requested-With, Content-Type, Accept, Authorization"
+  );
+  res.header(
+    "Access-Control-Allow-Methods",
+    "GET, POST, PUT, DELETE, OPTIONS"
+  );
+
+  // IMPORTANT POUR VERCEL : Répondre aux préflight OPTIONS
+  if (req.method === "OPTIONS") {
+    return res.status(200).end();
+  }
+
+  next();
+});
+
+
 const __dirname = path.resolve();
 
 
