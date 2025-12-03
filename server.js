@@ -27,7 +27,11 @@ connectDB();
 
 // Middlewares
 app.use(express.json()); // permet à notre app de pouvoir lire les fichiers JSON des requétes du client
-app.use(cors());
+//app.use(cors());
+app.use(cors({
+  origin: "https://sevfrontend.vercel.app",
+  methods: ["GET","POST","PUT","DELETE","OPTIONS"],
+}));
 app.use(morgan("dev"));
 
 //Les routes
